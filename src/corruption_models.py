@@ -19,32 +19,17 @@ import xgboost as xgb
 
 from linear_regression import linear_reg
 from metrics import get_metrics
+from load_data import load_data
+from create_correlation import correlation
 
-corruption_dataset = pd.read_csv(
-    "../data/processed/corruption_dataset.csv", index_col=0
-)
+path = "../data/processed/corruption_dataset.csv"
 
+corruption_dataset = load_data(path=path)
 
 corruption_dataset.head()
 
 # Exclude the specified features from the correlation matrix
-excluded_features = ["control_of_corruption", "rule_of_law", "gov_effectiveness"]
-filtered_dataset = corruption_dataset.drop(columns=excluded_features)
 
-# Correlation matrix without the excluded features
-corr_matrix = filtered_dataset.corr(numeric_only=True)
-
-# Sort correlation of each feature with the target
-target_corr = corr_matrix["corruption_perceptions_index_score"].sort_values(
-    ascending=False
-)
-print("Correlation with CPI Score (Excluding Certain Features):\n", target_corr)
-
-# Visualize the full correlation heatmap
-plt.figure(figsize=(6, 5))
-sns.heatmap(corr_matrix, annot=False, cmap="coolwarm", center=0)
-plt.title("Correlation Heatmap (Excluding Certain Features)")
-plt.show()
 
 ## 5. Model the Data
 
@@ -57,6 +42,10 @@ columns_to_remove = [
     "gov_effectiveness",
     "year",
 ]
+
+filtered_dataset = corruption_dataset.drop(columns=columns_to_remove)
+
+correlation(filtered_dataset, "corruption_perceptions_index_score")
 
 # Create feature set X and target y
 X = corruption_dataset.drop(
